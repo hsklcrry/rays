@@ -268,7 +268,7 @@ input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
 
 for i in range(10, 45):
     input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0, i + 1.0, 1.0, color=BLACK))
-    input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0, i + 1.0, 20.0, color=BLACK))
+    #input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0, i + 1.0, 20.0, color=BLACK))
 
 
 edges = input_edges.copy()
@@ -394,7 +394,7 @@ def findNewEvent(s1, s2, p):
             #  print('    new intersection {pt}'.format(pt=i))
             if intersections.get(i) is None:
                 intersections[i] = avl.Leaf()
-            intersections[i] = intersections[i].insert(s1, s2)
+            intersections[i] = intersections[i].update([s1, s2])
             s = s.insert(i)
     return
 

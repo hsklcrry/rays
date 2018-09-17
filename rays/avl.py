@@ -9,14 +9,6 @@ def stdcmp(a, b):
     return a < b
 
 
-class Tree:
-    def __init__(self, kvs=None, cmp=stdcmp):
-        self.node = Leaf(cmp=stdcmp)
-        return Leaf(cmp=stdcmp)
-
-    def __setitem__(self, key, value):
-        return
-
  # класс, описывающий узел дерева
 class Node:
     def __init__(self, key, value=None, cmp=stdcmp):
@@ -40,6 +32,9 @@ class Node:
     def __eq__(self, other):
         return self.key == other.key and self._val == other._val and \
             self._right == other._right and self._left == other._left
+
+    def getNew(self, key):
+        
 
     def __getitem__(self, key):
         if self.key == key:
@@ -106,6 +101,7 @@ class Node:
             return self._rotateRight()
         return self
 
+    '''
     def insert(self, key, value=None):
         if key == self.key:
             self._val = value
@@ -114,6 +110,15 @@ class Node:
             self._left = self._left.insert(key, value)
         else:
             self._right = self._right.insert(key, value)
+        return self.balance()'''
+
+    def insert(self, key):
+        if (key == self.key):
+            return self.balance()
+        if self.cmp(key, self.key):  # спускаемся в левое поддерево если key < self.key
+            self._left = self._left.insert(key)
+        else:
+            self._right = self._right.insert(key)
         return self.balance()
 
     def update(self, *iters):
@@ -297,12 +302,12 @@ class Node:
 
  # класс, описывающий лист дерева
 class Leaf(Node):
-    def __init__(self, cmp=stdcmp):
-        self.cmp = cmp
+    def __init__(self, key, cmp=stdcmp):
+        self._key = key
         return
 
     def __repr__(self):
-        return ' '
+        return repr(key)
 
     def __getitem__(self, key):
         return self
@@ -312,7 +317,7 @@ class Leaf(Node):
         return Node(key, value=value, cmp=self.cmp)
 
     def fixheight(self):
-        return 0
+        return 1
 
     def bfactor(self):
         return 0
@@ -339,21 +344,21 @@ class Leaf(Node):
         return self
 
     def copy(self):
-        return Leaf()
+        return Leaf(self.key)
 
     def height(self):
-        return 0
+        return 1
 
     def __eq__(self, other):
-        return isinstance(other, Leaf)
+        return isinstance(other, Leaf) and self.key == other.key
 
     def is_empty(self):
-        return True
+        return self.key is None
 
     def insert(self, key, value=None):
-        return Node(
-            key,
-            value)
+        if self.cmp(self.key, key):
+            
+        n = Node(key, value)
 
     def __next__(self):
         raise StopIteration()
