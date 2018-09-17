@@ -148,14 +148,14 @@ class Edge:
         return hash((self.left.x, self.left.y, self.right.x, self.right.y))
 
     def isIntersect(self, edge):
-        return vol(self.left, self.right, edge.l) * \
-            vol(self.left, self.right, edge.r) <= 0 \
-            and vol(edge.l, edge.r, self.left) * \
-            vol(edge.l, edge.r, self.right) <= 0
+        return vol(self.left, self.right, edge.left) * \
+            vol(self.left, self.right, edge.right) <= 0 \
+            and vol(edge.left, edge.right, self.left) * \
+            vol(edge.left, edge.right, self.right) <= 0
 
     def getIntersection(self, edge):
-        prod1 = vol(edge.l, edge.r, self.left)
-        prod2 = vol(edge.l, edge.r, self.right)
+        prod1 = vol(edge.left, edge.right, self.left)
+        prod2 = vol(edge.left, edge.right, self.right)
         color = GRAY
         try:
             resX = self.left.x + (self.right.x - self.left.x) * \
@@ -215,7 +215,7 @@ class Ray:
         return Ray(pt)
 
     def isIntersect(self, edge):
-        return vol(self.target, Pt(0, 0), edge.l) * \
+        return vol(self.target, Pt(0, 0), edge.left) * \
                vol(self.target, Pt(0, 0), edge.r) <= 0
         #  для луча не подходит
 
