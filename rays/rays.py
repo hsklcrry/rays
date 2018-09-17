@@ -7,9 +7,9 @@ Created on Sat May 26 19:22:20 2018
 
 import avl
 from fractions import Fraction
+import time
 
 EPS = 1e-08
-
 
 def vol(a, b, c):
     return (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)
@@ -251,6 +251,7 @@ class Ray:
 
 intersections = dict()  # avl.Leaf()
 q = dict()
+pts = dict()  # ключ - луч из 0. Значения - точки на этом луче, упорядоченные по расстоянию от 0
 s = avl.Leaf()
 
 tau = avl.Leaf()
@@ -262,7 +263,11 @@ input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
                Edge.fromCoordinates(4.0, 1.0, 1.0, 4.0, color=BLACK),
                Edge.fromCoordinates(6.0, 5.0, 5.0, 6.0, color=BLACK),
                Edge.fromCoordinates(2.0, 0.0, 1.0, 2.0, color=BLACK),
+               Edge.fromCoordinates(0.0, 10.0,1.0, 10.0, color=BLACK)
                ]
+
+for i in range(10, 40):
+    input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0, i + 1.0, 1.0, color=BLACK))
 
 
 edges = input_edges.copy()
@@ -274,11 +279,16 @@ for e in edges:
     vertices = vertices.insert((e.left, e.right))
     s = s.insert(e.left)
     s = s.insert(e.right)
-# добавляем отрезки из начала
+
+# добавляем отрезки из начала, попутно создаём лучи
 for v in s:
     e = Edge(Pt(0.0, 0.0), Pt.mul(R, v), isRay=True)
-    edges.append(e)
+    r = Ray.fromEdge(e)
+    if (r not in pts):
+        pts[r] = avl.Leaf()
+        edges.append(e)
     rays[e] = avl.Leaf()
+
 
 edges.sort(key=lambda x: x.left)  # n ln n
 # print(edges)
@@ -335,7 +345,7 @@ def HandleEvent(p):
     tau = tau.difference(low, c)
     ###########################################################
     # step 6
-    Edge.height = p.y - 10*EPS
+    Edge.height = p.y - 10*EPS  ## теперь сравнение делается по другой высоте
     tau = tau.update(U, c)
     ###########################################################
     # step 8...
@@ -379,26 +389,24 @@ def findNewEvent(s1, s2, p):
     if s1.isIntersect(s2):
         print('    {s1} intersects {s2}'.format(s1=s1, s2=s2))
         i = s1.getIntersection(s2)
-        # print('i = {inter}'.format(inter=i))
         if i > p:
             print('    new intersection {pt}'.format(pt=i))
             if intersections.get(i) is None:
                 intersections[i] = avl.Leaf()
             intersections[i] = intersections[i].insert(s1, s2)
-            # print('intersections is {a}'.format(a=intersections[i]))
             s = s.insert(i)
     return
 
-
+start = time.time()
 while len(s) > 0:
     v = s.findmin().key
     s = s.removemin()
+    start1 = time.time()
     HandleEvent(v)
+    end1 = time.time()
+    print('ELAPSED TIME: {t}'.format(t=end1 - start1))
 
-pts = dict()
-for e in rays:
-    r = Ray.fromEdge(e)
-    pts[r] = avl.Leaf()
+end = time.time()
 
 Pt.__lt__ = Pt.cmpByDistance  # сравниваем по расстоянию
 
@@ -439,3 +447,5 @@ for ray in pts:
                 visible.add(e)
 
 print('Visible edges are: {vis}'.format(vis=visible))
+print('ELAPSED TIME: {t}. e = {l}, i = {i}'.format(t=end - start, l=len(input_edges), i=len(intersections)))
+results.append((end - start, len(input_edges), len(intersections)))
