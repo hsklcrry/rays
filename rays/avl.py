@@ -266,7 +266,8 @@ class Node:
         return self.balance()
 
     def remove(self, key):
-        if self.cmp(key, self._key):            self._left = self._left.remove(key)
+        if self.cmp(key, self._key):            
+            self._left = self._left.remove(key)
         else:
             if self.cmp(self.key, key):
                 self._right = self._right.remove(key)
