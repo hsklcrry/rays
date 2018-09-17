@@ -266,8 +266,9 @@ input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
                Edge.fromCoordinates(0.0, 10.0,1.0, 10.0, color=BLACK)
                ]
 
-for i in range(10, 40):
+for i in range(10, 45):
     input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0, i + 1.0, 1.0, color=BLACK))
+    input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0, i + 1.0, 20.0, color=BLACK))
 
 
 edges = input_edges.copy()
@@ -306,13 +307,13 @@ for e in edges:
 def HandleEvent(p):
     # p.color = BLACK
     intersections[p] = intersections.get(p, avl.Leaf())
-    print('##################################################################')
+    #  print('##################################################################')
     print('p = {pt}'.format(pt=p))
     global tau
     global q
 
     # выбрали высоту
-    Edge.height = p.y  # - 10*EPS
+    Edge.height = p.y  # 10*EPS
     # print('Height = {ht}'.format(ht=Edge.height))
     ###########################################################
     # step 1
@@ -337,7 +338,7 @@ def HandleEvent(p):
     ###########################################################
     # steps 3, 4
     # unionP = U.update(c, low)
-    print('UnuionUCL = ({un}, {cn}, {ln})'.format(un=len(U), cn=len(c), ln=len(low)))
+    #  print('UnuionUCL = ({un}, {cn}, {ln})'.format(un=len(U), cn=len(c), ln=len(low)))
     if (len(U) + len(c) + len(low) > 1):
         intersections[p] = intersections[p].update(U, c, low)
     ###########################################################
@@ -360,7 +361,7 @@ def HandleEvent(p):
                 print(p)
             s1 = tau.getPrevFast(low.findmin().key)
             s2 = tau.getNext(low.findmax().key)
-            print('FNE1({s1}, {s2})'.format(s1=s1, s2=s2))
+            #  print('FNE1({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
         except(AttributeError):
             pass
@@ -368,14 +369,14 @@ def HandleEvent(p):
         try:
             s1 = uc.findmin().key
             s2 = tau.getPrev(s1)
-            print('FNE2({s1}, {s2})'.format(s1=s1, s2=s2))
+            #  print('FNE2({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
         except(AttributeError, IndexError):
             pass
         try:
             s1 = uc.findmax().key
             s2 = tau.copy().getNext(s1)
-            print('FNE3({s1}, {s2})'.format(s1=s1, s2=s2))
+            #  print('FNE3({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
         except(AttributeError, IndexError):
             pass
@@ -387,10 +388,10 @@ def findNewEvent(s1, s2, p):
     global intersections
     global s
     if s1.isIntersect(s2):
-        print('    {s1} intersects {s2}'.format(s1=s1, s2=s2))
+        #  print('    {s1} intersects {s2}'.format(s1=s1, s2=s2))
         i = s1.getIntersection(s2)
         if i > p:
-            print('    new intersection {pt}'.format(pt=i))
+            #  print('    new intersection {pt}'.format(pt=i))
             if intersections.get(i) is None:
                 intersections[i] = avl.Leaf()
             intersections[i] = intersections[i].insert(s1, s2)
