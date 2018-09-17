@@ -327,12 +327,9 @@ def HandleEvent(p):
     ###########################################################
     # steps 3, 4
     # unionP = U.update(c, low)
-    print('UnuionUCL = {u}'.format(u=len(U) + len(c) + len(low)))
+    print('UnuionUCL = ({un}, {cn}, {ln})'.format(un=len(U), cn=len(c), ln=len(low)))
     if (len(U) + len(c) + len(low) > 1):
         intersections[p] = intersections[p].update(U, c, low)
-        # print('#######################################')
-        # print(unionP)
-        # print('#######################################')
     ###########################################################
     # step 5
     tau = tau.difference(low, c)
@@ -379,7 +376,6 @@ def HandleEvent(p):
 def findNewEvent(s1, s2, p):
     global intersections
     global s
-    global q
     if s1.isIntersect(s2):
         print('    {s1} intersects {s2}'.format(s1=s1, s2=s2))
         i = s1.getIntersection(s2)
@@ -416,7 +412,7 @@ print('Output:')
 visible = set()
 for ray in pts:
     print('ray target is {t}'.format(t=ray.target))
-    nearestPt = pts[ray].findmin()._key
+    nearestPt = pts[ray].findmin().key
     print('nearest Point is {pt}'.format(pt=nearestPt))
     # print(nearestPt, ':')
     print('nearest Point color is {col}'.format(col=nearestPt.color))
