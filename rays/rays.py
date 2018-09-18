@@ -6,6 +6,7 @@ Created on Sat May 26 19:22:20 2018
 """
 
 import avl
+import avl_b
 from fractions import Fraction
 import time
 
@@ -266,7 +267,7 @@ input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
                Edge.fromCoordinates(0.0, 10.0,1.0, 10.0, color=BLACK)
                ]
 
-for i in range(10, 45):
+for i in range(10, 15):
     input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0, i + 1.0, 1.0, color=BLACK))
     input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0, i + 1.0, 20.0, color=BLACK))
 

@@ -2,38 +2,22 @@
 """
 Created on Tue May 29 17:05:58 2018
 
-@author: igeh
+@author: ernst
 """
-from functools import partial
 
-
-class Infix(object):
-    def __init__(self, func):
-        self.func = func
-
-    def __or__(self, other):
-        return self.func(other)
-
-    def __ror__(self, other):
-        return Infix(partial(self.func, other))
-
-    def __call__(self, v1, v2):
-        return self.func(v1, v2)
-
-
-@Infix
 def stdcmp(a, b):
     return a < b
 
 
-class Node:
+ # класс, описывающий узел дерева
+class NodeE:
     def __init__(self, key, value=None, cmp=stdcmp):
         ''' cmp(a,b) - аналог a < b для ключей'''
         self._key = key
         self._val = value
         self._height = 1
-        self._left = Leaf()
-        self._right = Leaf()
+        self._left = LeafN()
+        self._right = LeafN()
         self._iter = self
         self.cmp = cmp
         return
@@ -46,27 +30,27 @@ class Node:
         return 1 + len(self._left) + len(self._right)
 
     def __eq__(self, other):
-        return self._key == other._key and self._val == other._val and \
+        return self.key == other.key and self._val == other._val and \
             self._right == other._right and self._left == other._left
 
     def __getitem__(self, key):
-        if self._key == key:
+        if self.key == key:
             return self._val
-        if self._key | self.cmp | key:
+        if self.cmp(self.key, key):
             return self._right[key]
         return self._left[key]
 
     def __setitem__(self, key, value):
-        if self._key == key:
+        if self.key == key:
             self._val = value
             return
-        if self._key | self.cmp | key:
+        if self.cmp(self.key, key):
             self._right[key] = value
             return
         self._left[key] = value
 
     def copy(self):
-        c = Node(self._key, self._val, cmp=self.cmp)
+        c = NodeE(self.key, self._val, cmp=self.cmp)
         c._left = self._left.copy()
         c._right = self._right.copy()
         return c
@@ -79,14 +63,11 @@ class Node:
         return self._height
 
     def bfactor(self):
-        self.fixheight()
         return self._right.height() - self._left.height()
 
     def fixheight(self):
         hl = self._left.height()
-        self._left._height = hl
         hr = self._right.height()
-        self._right._height = hr
         return 1 + max(hl, hr)
 
     def _rotateRight(self):
@@ -105,20 +86,7 @@ class Node:
         p.fixheight()
         return p
 
-    def _mov(self, other):
-        self._left = other._left
-        self._right = other._right
-        self._val = other._val
-        self._key = other._key
-        self.cmp = other.cmp
-        self._height = other._height
-
     def balance(self):
-        b = self._balance()
-        self._mov(b)
-        return self
-
-    def _balance(self):
         self.fixheight()
         if (self.bfactor() >= 2):
             if self._right.bfactor() < 0:
@@ -131,10 +99,10 @@ class Node:
         return self
 
     def insert(self, key, value=None):
-        if key == self._key:
+        if key == self.key:
             self._val = value
             return self.balance()
-        if self.cmp(key, self._key):
+        if self.cmp(key, self.key):
             self._left = self._left.insert(key, value)
         else:
             self._right = self._right.insert(key, value)
@@ -153,17 +121,19 @@ class Node:
         return self
 
     def __repr__(self):
-        return "({left} {key}[{val}] {right})".format(left=self._left,
-                key=self._key, right=self._right,
+        return "({left} {key}[{val}] {right})".format(
+                left=self._left,
+                key=self.key,
+                right=self._right,
                 val=self._val if self._val is not None else '')
 
     def findmin(self):
-        if (isinstance(self._left, Leaf)):
+        if (isinstance(self._left, LeafE)):
             return self
         return self._left.findmin()
 
     def findmax(self):
-        if (isinstance(self._right, Leaf)):
+        if (isinstance(self._right, LeafE)):
             return self
         return self._right.findmax()
 
@@ -172,58 +142,58 @@ class Node:
         # return default
 
     def _getPrev(self, key):
-        if self.key | self.cmp | key:  # or self._key == key:
-            if isinstance(self._right, Leaf):
-                return self._key
-            if self._right._key | self.cmp | key:
+        if self.cmp(self.key, key):  # or self.key == key:
+            if isinstance(self._right, LeafE):
+                return self.key
+            if self.cmp(self._right.key, key):
                 return self._right.getPrev(key)
-            return max(self._key, self._right.getPrev(key))
-        if key | self.cmp | self._key or self._key == key:
+            return max(self.key, self._right.getPrev(key))
+        if self.cmp(key, self.key) or self.key == key:
             if self._left.is_empty():
                 return None
-                # return self._key
+                # return self.key
             return self._left.getPrev(key)
 
     '''def getPr(self, cond):
-        if cond(self._key):
+        if cond(self.key):
             return self._left.getPr(cond)
-        if isinstance(self._right, Leaf):
-            return self._key
-        if cond(self._right._key):
-            return self._key
+        if isinstance(self._right, LeafE):
+            return self.key
+        if cond(self._right.key):
+            return self.key
         return self._right.getPr(cond)'''
 
     def getPrev(self, key):
-        return self.getLessThan(key).findmax()._key
+        return self.getLessThan(key).findmax().key
 
     # def getPrev2(self, key):
 
         '''
-        if self._key == key:
-            return self.findmax()._key
-        if self.cmp(self._key, key):
+        if self.key == key:
+            return self.findmax().key
+        if self.cmp(self.key, key):
             # s.key < key
             return _prevLoop(self.left, key, True)
         # s.key > key
         return _prevLoop(self.right, key, False)
 
     def _prevLoop(tree, key, state):
-        b = tree.cmp(tree._key, key)
+        b = tree.cmp(tree.key, key)
         if state and b:
             '''
 
     def getPrevFast(self, key):
-        return self.getLessThan_unbalanced(key).findmax()._key
+        return self.getLessThan_unbalanced(key).findmax().key
 
     def getNext(self, key):
-        return self.getGreaterThan(key).findmin()._key
+        return self.getGreaterThan(key).findmin().key
 
     def getLessThan_unbalanced(self, key):
         ''' returns a copy of the \'subtree\' whose keys are less
         than given key '''
-        if key == self._key:
-            return self._left.copy()  # .findmax()._key
-        if self._key | self.cmp | key:
+        if key == self.key:
+            return self._left.copy()  # .findmax().key
+        if self.cmp(self.key, key):
             res = self.copy()
             res._right = res._right._getLT_unbalanced(key)
             return res
@@ -233,9 +203,9 @@ class Node:
     def getLessThan(self, key):
         ''' returns a copy of the \'subtree\' whose keys
         are less than given key '''
-        if key == self._key:
-            return self._left.copy()  # .findmax()._key
-        if self._key | self.cmp | key:
+        if key == self.key:
+            return self._left.copy()  # .findmax().key
+        if self.cmp(self.key, key):
             res = self.copy()
             res._right = res._right._getLT(key)
             return res.balance()
@@ -243,18 +213,18 @@ class Node:
         return res.balance()
 
     def _getLT_unbalanced(self, key):
-        if key == self._key:
-            return self._left  # .findmax()._key
-        if self._key | self.cmp | key:
+        if key == self.key:
+            return self._left  # .findmax().key
+        if self.cmp(self.key, key):
             self._right = self._right._getLT(key)
             return self
         res = self._left._getLT(key)
         return res
 
     def _getLT(self, key):
-        if key == self._key:
-            return self._left  # .findmax()._key
-        if self._key | self.cmp | key:
+        if key == self.key:
+            return self._left  # .findmax().key
+        if self.cmp(self.key, key):
             self._right = self._right._getLT(key)
             return self.balance()
         res = self._left._getLT(key)
@@ -263,9 +233,9 @@ class Node:
     def getGreaterThan(self, key):
         ''' returns a copy of the \'subtree\' whose keys are less than
         given key '''
-        if key == self._key:
+        if key == self.key:
             return self._right.copy()
-        if key | self.cmp | self._key:
+        if self.cmp(key, self.key):
             res = self.copy()
             res._left = res._left._getGT(key)
             return res.balance()
@@ -273,31 +243,39 @@ class Node:
         return res.balance()
 
     def _getGT(self, key):
-        if key == self._key:
+        if key == self.key:
             return self._right
-        if key | self.cmp | self._key:
+        if self.cmp(key, self.key):
             self._left = self._left._getGT(key)
             return self.balance()
         res = self._right._getGT(key)
         return res.balance()
 
     def removemin(self):
-        if (isinstance(self._left, Leaf)):
+        if (isinstance(self._left, LeafE)):
             return self._right
         self._left = self._left.removemin()
         return self.balance()
 
     def remove(self, key):
-        if (key | self.cmp | self._key):
-            self._left = self._left.remove(key)
-        else:
-            if (self._key | self.cmp | key):
-                self._right = self._right.remove(key)
+        if self.cmp(key, self.key) or key == self.key:
+            if isinstance(self._left, LeafE):
+                self = self._right
             else:
-                # key == self._key
+                self._left = self._left.remove(key)
+        else:
+            if self.cmp(self.key, key):
+                if isinstance(self._right, LeafE):
+                    if self._right.key == key:
+                        self = self._left
+                else:                        
+                    self._right = self._right.remove(key)
+            else:
+                raise Exception('Сработала странная ветка')
+                # key == self.key
                 q = self._left
                 r = self._right
-                if (isinstance(r, Leaf)):
+                if (isinstance(r, LeafE)):
                     return q
                 minimum = r.findmin()
                 minimum._right = r.removemin()
@@ -310,30 +288,73 @@ class Node:
         return self
 
     def __next__(self, default=None):
-        if (isinstance(self._iter, Leaf)):
+        if (isinstance(self._iter, LeafE)):
             raise StopIteration()
         m = self._iter.findmin().key
         self._iter = self._iter.removemin()
         return m
 
 
-class Leaf(Node):
+ # класс, описывающий пустое дерево
+class LeafN(NodeE):
     def __init__(self, cmp=stdcmp):
         self.cmp = cmp
         return
 
     def __repr__(self):
-        return ' '
+        return 'Empty tree'
 
+    def __getitem__(self, key):
+        raise IndexError()
+
+    def __setitem__(self, key, value):
+        return LeafE(key, value=value, cmp=self.cmp)
+
+    def __eq__(self, other):
+        return isinstance(other, LeafN)
+
+    def is_empty(self):
+        return True
+
+    def insert(self, key, value=None):
+        return LeafE(key, value=value, cmp=self.cmp)
+
+    def __next__(self):
+        raise StopIteration()
+
+    def is_member(self, value=None):
+        return False
+
+    def __len__(self):
+        return 0
+
+
+ # класс, описывающий лист дерева
+class LeafE(NodeE):
+    def __init__(self, key, value=None, cmp=stdcmp):
+        self.cmp = cmp
+        self._key = key
+        self._val = value
+        return
+
+    def __repr__(self):
+        return repr(self.key)
+
+    @property
+    def key(self):
+        return self._key
+
+    '''
     def __getitem__(self, key):
         return self
         raise IndexError()
 
     def __setitem__(self, key, value):
-        return Node(key, value=value, cmp=self.cmp)
+        return NodeE(key, value=value, cmp=self.cmp)
+        '''
 
     def fixheight(self):
-        return 0
+        return 1
 
     def bfactor(self):
         return 0
@@ -360,53 +381,70 @@ class Leaf(Node):
         return self
 
     def copy(self):
-        return Leaf()
+        return LeafE(self.key, value=self._val, cmp=self.cmp)
 
     def height(self):
-        return 0
+        return 1
 
     def __eq__(self, other):
-        return isinstance(other, Leaf)
+        return isinstance(other, LeafE) and other.key == self.key \
+            and self._val == other._val
 
     def is_empty(self):
-        return True
+        return False
 
     def insert(self, key, value=None):
-        self._mov(Node(
-            key,
-            value))
+        if self.key == key:
+            self._val = value
+            return self
+        l, r = self.key, key
+        if self.cmp(key, self.key):
+            l, r = r, l
+        res = NodeE(l, cmp=self.cmp)
+        res._left = LeafE(l, cmp=self.cmp)
+        res._right = LeafE(r, cmp=self.cmp)
+        return res
+
+    def __iter__(self):
+        self._iter = True
         return self
 
     def __next__(self):
+        if self._iter:
+            self._iter = False
+            return self.key
         raise StopIteration()
 
     def is_member(self, value=None):
-        return False
+        raise Exception('is_member unimplemented!')
+        return value == self.key
 
     def findmin(self):
-        return None
+        return self
 
     def findmax(self):
-        return None
+        return self
 
     def removemin(self):
         return self
 
     def remove(self, key):
+        raise Exception('LeafE.remove unimplemented')
         return self
 
+    '''
     @property
     def left(self):
-        return Leaf()
+        return LeafN()
 
     @property
     def right(self):
-        return Leaf()
+        return LeafN()
+        '''
 
     def __len__(self):
-        return 0
+        return 1
 
 
-x = Leaf()  # .update(range(10))
-x.update(range(10))
+x = LeafN().update(range(10))
 # y = x.copy()
