@@ -12,6 +12,7 @@ import time
 
 EPS = 1e-08
 
+
 def vol(a, b, c):
     return (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)
 
@@ -24,14 +25,14 @@ BLACK = -1
 class Pt:
     id = 0
 
-    def __init__(self, x, y, color=GRAY):
+    def __init__(self, x, y, color=BLACK):
         self.x = Fraction(x)
         self.y = Fraction(y)
         self.color = color
         Pt.id = 1 + Pt.id
         return
 
-    def mul(c, pt, col=GRAY):
+    def mul(c, pt, col=BLACK):
         return Pt(c*pt.x, c*pt.y, color=col)
 
     def __repr__(self):
@@ -127,8 +128,11 @@ class Edge:
         # abs(s**2 - xs**2 - ys**2 - 6*xs*ys - 2*(xs + ys)*(s - xs - ys)) < EPS
         # return abs(s - xs - ys) < EPS
 
-    def _intersection(Ax, Ay, Bx, By):
-        return (Bx*(Ay - Edge.height) + Ax*(Edge.height - By))/(Ay - By)
+    def _intersection(Ax, Ay, Bx, By):  # x координата пересечения с заметающей
+        alpha = By - Edge.height
+        beta = Edge.height - Ay
+        return (alpha*Ax + beta*Bx) / (alpha + beta)
+        # return (Bx*(Ay - Edge.height) + Ax*(Edge.height - By))/(Ay - By)
 
     def isIntersectLine(self, height=None):
         if (height is None):
@@ -157,7 +161,8 @@ class Edge:
     def getIntersection(self, edge):
         prod1 = vol(edge.left, edge.right, self.left)
         prod2 = vol(edge.left, edge.right, self.right)
-        color = GRAY
+        prod3 = vol(edge.left, self.left, self.right)
+        color = GRAY  # пересечение общего вида
         try:
             resX = self.left.x + (self.right.x - self.left.x) * \
                 abs(prod1)/abs(prod2-prod1)
@@ -166,9 +171,12 @@ class Edge:
         except(ZeroDivisionError):
             resX = self.right.x
             resY = self.right.y
-        if abs(prod1) < EPS or abs(prod2) < EPS:
             color = BLACK
-        return Pt(resX, resY, color)
+        if abs(prod1) < 10*EPS or abs(prod2) < 10*EPS or abs(prod3) < 10*EPS:
+            color = BLACK  # точка пересечения совпала с вершиной
+        res = Pt(resX, resY, color)
+        print('returned intersection = {pt}, col={c}'.format(pt=res, c=color))
+        return res
 
     def __le__(self, edge):
         if (self.isIntersectLine() and edge.isIntersectLine()):
@@ -195,6 +203,8 @@ class Edge:
                 if Fx is None:
                     return Ex <= Cx
             return Ex <= Fx  # Cx
+        return Pt.cmpLexicographicaly(self.left, edge.left)
+        # raise Exception('Один из отрезков не пересекает заметающую прямую')
 
     def __lt__(self, edge):
         return self <= edge and self != edge
@@ -252,7 +262,8 @@ class Ray:
 
 intersections = dict()  # avl.Leaf()
 q = dict()
-pts = dict()  # ключ - луч из 0. Значения - точки на этом луче, упорядоченные по расстоянию от 0
+pts = dict()    # ключ - луч из 0. Значения - точки на этом луче,
+                # упорядоченные по расстоянию от 0
 s = avl_b.LeafN()
 
 tau = avl_b.LeafN()
@@ -263,13 +274,14 @@ input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
                Edge.fromCoordinates(0.0, 4.0, 1.0, 3.0, color=BLACK),
                Edge.fromCoordinates(4.0, 1.0, 1.0, 4.0, color=BLACK),
                Edge.fromCoordinates(6.0, 5.0, 5.0, 6.0, color=BLACK),
-               Edge.fromCoordinates(2.0, 0.0, 1.0, 2.0, color=BLACK),
-               Edge.fromCoordinates(0.0, 10.0,1.0, 10.0, color=BLACK)
+               Edge.fromCoordinates(2.0, 0.0, 1.0, 2.0, color=BLACK)
                ]
 
 for i in range(10, 12):
-    input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0, i + 1.0, 1.0, color=BLACK))
-    #input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0, i + 1.0, 20.0, color=BLACK))
+    input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0,
+                                            i + 1.0, 1.0, color=BLACK))
+    # input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0,
+    #                                        i + 1.0, 20.0, color=BLACK))
 
 
 edges = input_edges.copy()
@@ -307,7 +319,7 @@ for e in edges:
 
 def HandleEvent(p):
     # p.color = BLACK
-    intersections[p] = intersections.get(p, avl_b.LeafN())
+    intersections[p] = avl_b.LeafN()
     print('##################################################################')
     print('p = {pt}'.format(pt=p))
     global tau
@@ -315,12 +327,11 @@ def HandleEvent(p):
 
     # выбрали высоту
     Edge.height = p.y
-    # print('Height = {ht}'.format(ht=Edge.height))
+    print('Height = {ht}'.format(ht=Edge.height))
     ###########################################################
     # step 1
     U = avl_b.LeafN()
     if q.get(p) is not None:
-        # в q[p] не более двух рёбер
         U = U.update(q[p])
 
     ###########################################################
@@ -339,19 +350,39 @@ def HandleEvent(p):
     ###########################################################
     # steps 3, 4
     # unionP = U.update(c, low)
-    print('UnuionUCL = ({un}, {cn}, {ln})'.format(un=len(U), cn=len(c), ln=len(low)))
+    print('UnuionUCL = ({un}, {cn}, {ln})'.format(
+        un=len(U),
+        cn=len(c),
+        ln=len(low)))
+    #  print(c)
+    print('#####')
     if (len(U) + len(c) + len(low) > 1):
         intersections[p] = intersections[p].update(U, c, low)
     ###########################################################
     # step 5
-    tau = avl_b.LeafN().update(tau.difference(low, c))
+    tau = tau.difference(low, c)
     ###########################################################
     # step 6
-    Edge.height = p.y - 10*EPS  ## теперь сравнение делается по другой высоте
-    tau = tau.update(U, c)
+    Edge.height = p.y - 10*EPS  # теперь сравнение делается по другой высоте
+    for e in U:
+        try:
+            tau = tau.insert(e)
+        except(Exception):
+            print('exc')
+    for e in c:
+        try:
+            tau = tau.insert(e)
+        except(Exception):
+            print('exc')
     ###########################################################
     # step 8...
-    uc = c.update(U)
+    uc = c.copy()
+    for e in U:
+        try:
+            uc = uc.insert(e)
+        except(Exception):
+            print('exc at uc')
+    # uc = c.update(U)
     # if e.isRay:
     #    rays[e] = rays[e].update(tau)
     # tau1 = tau  # avl.Leaf().update(tau)
@@ -360,26 +391,26 @@ def HandleEvent(p):
         try:
             if len(low) > 1:
                 print(p)
-            s1 = tau.getPrevFast(low.findmin().key)
+            s1 = tau.getPrev(low.findmin().key)
             s2 = tau.getNext(low.findmax().key)
-            #  print('FNE1({s1}, {s2})'.format(s1=s1, s2=s2))
+            print('FNE1({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
-        except(AttributeError):
+        except(AttributeError, Exception):
             pass
     else:
         try:
             s1 = uc.findmin().key
             s2 = tau.getPrev(s1)
-            #  print('FNE2({s1}, {s2})'.format(s1=s1, s2=s2))
+            print('FNE2({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
-        except(AttributeError, IndexError):
+        except(AttributeError, IndexError, Exception):
             pass
         try:
             s1 = uc.findmax().key
             s2 = tau.copy().getNext(s1)
-            #  print('FNE3({s1}, {s2})'.format(s1=s1, s2=s2))
+            print('FNE3({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
-        except(AttributeError, IndexError):
+        except(AttributeError, IndexError, Exception):
             pass
     ###########################################################
     return
@@ -388,16 +419,19 @@ def HandleEvent(p):
 def findNewEvent(s1, s2, p):
     global intersections
     global s
+    if s1.isRay and s2.isRay:
+        return
     if s1.isIntersect(s2):
-        #  print('    {s1} intersects {s2}'.format(s1=s1, s2=s2))
+        print('    {s1} intersects {s2}'.format(s1=s1, s2=s2))
         i = s1.getIntersection(s2)
         if i > p:
-            #  print('    new intersection {pt}'.format(pt=i))
+            print('    new intersection {pt}'.format(pt=i))
             if intersections.get(i) is None:
                 intersections[i] = avl_b.LeafN()
             intersections[i] = intersections[i].insert(s1, s2)
             s = s.insert(i)
     return
+
 
 start = time.time()
 while len(s) > 0:
@@ -406,7 +440,7 @@ while len(s) > 0:
     start1 = time.time()
     HandleEvent(v)
     end1 = time.time()
-    print('ELAPSED TIME: {t}'.format(t=end1 - start1))
+    # print('ELAPSED TIME: {t}'.format(t=end1 - start1))
 
 end = time.time()
 
@@ -451,5 +485,8 @@ for ray in pts:
                 visible.add(e)
 
 print('Visible edges are: {vis}'.format(vis=visible))
-print('ELAPSED TIME: {t}. e = {l}, i = {i}'.format(t=end - start, l=len(input_edges), i=len(intersections)))
+print('ELAPSED TIME: {t}. e = {l}, i = {i}'.format(
+        t=end - start, 
+        l=len(input_edges), 
+        i=len(intersections)))
 results.append((end - start, len(input_edges), len(intersections)))

@@ -5,12 +5,12 @@ Created on Tue May 29 17:05:58 2018
 @author: ernst
 """
 
+
 def stdcmp(a, b):
     return a < b
 
 
- # класс, описывающий узел дерева
-class NodeE:
+class NodeE:  # класс, описывающий узел дерева
     def __init__(self, key, value=None, cmp=stdcmp):
         ''' cmp(a,b) - аналог a < b для ключей'''
         self._key = key
@@ -267,15 +267,17 @@ class NodeE:
 
     def remove(self, key):
         if key == self.key:
-            print(self)
-            print('key = {key}, s.key = {skey}'.format(key=key,skey=self.key))
+            '''print(self)
+            print('key = {key}, s.key = {skey}'.format(
+                    key=key,
+                    skey=self.key))'''
             self._key = self._left.findmax().key
             if isinstance(self._left, LeafE):
                 self = self._right
             else:
                 self._left = self._left.remove(key)
             return self.balance()
-                   
+
         if self.cmp(key, self.key):
             if isinstance(self._left, LeafE):
                 self = self._right
@@ -286,10 +288,12 @@ class NodeE:
                 if isinstance(self._right, LeafE):
                     if self._right.key == key:
                         self = self._left
-                else:                        
+                else:
                     self._right = self._right.remove(key)
             else:
-                print('key = {key}, s.key = {skey}'.format(key=key,skey=self.key))
+                print('key = {key}, s.key = {skey}'.format(
+                        key=key,
+                        skey=self.key))
                 global e1
                 global e2
                 e1 = self.key
@@ -311,15 +315,14 @@ class NodeE:
         return self
 
     def __next__(self, default=None):
-        if (isinstance(self._iter, LeafE)):
+        if (isinstance(self._iter, LeafN)):
             raise StopIteration()
         m = self._iter.findmin().key
         self._iter = self._iter.removemin()
         return m
 
 
- # класс, описывающий пустое дерево
-class LeafN(NodeE):
+class LeafN(NodeE):  # класс, описывающий пустое дерево
     def __init__(self, cmp=stdcmp):
         self.cmp = cmp
         return
@@ -382,8 +385,7 @@ class LeafN(NodeE):
         return 0
 
 
- # класс, описывающий лист дерева
-class LeafE(NodeE):
+class LeafE(NodeE):  # класс, описывающий лист дерева
     def __init__(self, key, value=None, cmp=stdcmp):
         self.cmp = cmp
         self._key = key
@@ -490,7 +492,6 @@ class LeafE(NodeE):
     def remove(self, key):
         if (self.key == key):
             return LeafN()
-        #raise Exception('LeafE.remove unimplemented')
         return self
 
     '''
