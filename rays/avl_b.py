@@ -134,7 +134,7 @@ class NodeE:
 
     def findmax(self):
         if (isinstance(self._right, LeafE)):
-            return self
+            return self._right
         return self._right.findmax()
 
     def get(self, key, default=None):
@@ -204,17 +204,21 @@ class NodeE:
         ''' returns a copy of the \'subtree\' whose keys
         are less than given key '''
         if key == self.key:
-            return self._left.copy()  # .findmax().key
+            return self._left.copy()._getLT(key)
         if self.cmp(self.key, key):
             res = self.copy()
-            res._right = res._right._getLT(key)
+            newR = res._right._getLT(key)
+            if isinstance(newR, LeafN):
+                res = res._left
+            else:
+                res._right = newR
             return res.balance()
         res = self._left.copy()._getLT(key)
         return res.balance()
 
     def _getLT_unbalanced(self, key):
         if key == self.key:
-            return self._left  # .findmax().key
+            return self._left
         if self.cmp(self.key, key):
             self._right = self._right._getLT(key)
             return self
@@ -223,9 +227,13 @@ class NodeE:
 
     def _getLT(self, key):
         if key == self.key:
-            return self._left  # .findmax().key
+            return self._left._getLT(key)
         if self.cmp(self.key, key):
-            self._right = self._right._getLT(key)
+            newR = self._right._getLT(key)
+            if isinstance(newR, LeafN):
+                self = self._left
+            else:
+                self._right = newR
             return self.balance()
         res = self._left._getLT(key)
         return res.balance()
@@ -258,7 +266,17 @@ class NodeE:
         return self.balance()
 
     def remove(self, key):
-        if self.cmp(key, self.key) or key == self.key:
+        if key == self.key:
+            print(self)
+            print('key = {key}, s.key = {skey}'.format(key=key,skey=self.key))
+            self._key = self._left.findmax().key
+            if isinstance(self._left, LeafE):
+                self = self._right
+            else:
+                self._left = self._left.remove(key)
+            return self.balance()
+                   
+        if self.cmp(key, self.key):
             if isinstance(self._left, LeafE):
                 self = self._right
             else:
@@ -271,6 +289,11 @@ class NodeE:
                 else:                        
                     self._right = self._right.remove(key)
             else:
+                print('key = {key}, s.key = {skey}'.format(key=key,skey=self.key))
+                global e1
+                global e2
+                e1 = self.key
+                e2 = key
                 raise Exception('Сработала странная ветка')
                 # key == self.key
                 q = self._left
@@ -301,11 +324,41 @@ class LeafN(NodeE):
         self.cmp = cmp
         return
 
+    def copy(self):
+        return LeafN()
+
     def __repr__(self):
         return 'Empty tree'
 
+    def findmax(self):
+        raise AttributeError
+
     def __getitem__(self, key):
         raise IndexError()
+
+    def getLessThan(self, key):
+        return self
+
+    def getLessThan_unbalanced(self, key):
+        return self
+
+    def _getLT(self, key):
+        return self
+
+    def _getLT_unbalanced(self, key):
+        return self
+
+    def getGreaterThan(self, key):
+        return self
+
+    def _getGT(self, key):
+        return self
+
+    def fixheight(self):
+        return 0
+
+    def balance(self):
+        return self
 
     def __setitem__(self, key, value):
         return LeafE(key, value=value, cmp=self.cmp)
@@ -363,22 +416,28 @@ class LeafE(NodeE):
         return default
 
     def getLessThan(self, key):
-        return self
+        if self.cmp(self.key, key):
+            return self
+        return LeafN()
 
     def getLessThan_unbalanced(self, key):
-        return self
+        return self.getLessThan(key)
 
     def _getLT(self, key):
-        return self
+        if self.cmp(self.key, key):
+            return self
+        return LeafN()
 
     def _getLT_unbalanced(self, key):
-        return self
+        return self.getLessThan(key)
 
     def getGreaterThan(self, key):
-        return self
+        if self.cmp(key, self.key):
+            return self
+        return LeafN()
 
     def _getGT(self, key):
-        return self
+        return self.getGreaterThan(key)
 
     def copy(self):
         return LeafE(self.key, value=self._val, cmp=self.cmp)
@@ -426,10 +485,12 @@ class LeafE(NodeE):
         return self
 
     def removemin(self):
-        return self
+        return LeafN()
 
     def remove(self, key):
-        raise Exception('LeafE.remove unimplemented')
+        if (self.key == key):
+            return LeafN()
+        #raise Exception('LeafE.remove unimplemented')
         return self
 
     '''

@@ -253,10 +253,10 @@ class Ray:
 intersections = dict()  # avl.Leaf()
 q = dict()
 pts = dict()  # ключ - луч из 0. Значения - точки на этом луче, упорядоченные по расстоянию от 0
-s = avl.Leaf()
+s = avl_b.LeafN()
 
-tau = avl.Leaf()
-vertices = avl.Leaf()
+tau = avl_b.LeafN()
+vertices = avl_b.LeafN()
 
 # ВХОДНЫЕ ДАННЫЕ
 input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
@@ -267,9 +267,9 @@ input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
                Edge.fromCoordinates(0.0, 10.0,1.0, 10.0, color=BLACK)
                ]
 
-for i in range(10, 15):
+for i in range(10, 12):
     input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0, i + 1.0, 1.0, color=BLACK))
-    input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0, i + 1.0, 20.0, color=BLACK))
+    #input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0, i + 1.0, 20.0, color=BLACK))
 
 
 edges = input_edges.copy()
@@ -287,9 +287,9 @@ for v in s:
     e = Edge(Pt(0.0, 0.0), Pt.mul(R, v), isRay=True)
     r = Ray.fromEdge(e)
     if (r not in pts):
-        pts[r] = avl.Leaf()
+        pts[r] = avl_b.LeafN()
         edges.append(e)
-    rays[e] = avl.Leaf()
+    rays[e] = avl_b.LeafN()
 
 
 edges.sort(key=lambda x: x.left)  # n ln n
@@ -307,26 +307,26 @@ for e in edges:
 
 def HandleEvent(p):
     # p.color = BLACK
-    intersections[p] = intersections.get(p, avl.Leaf())
-    #  print('##################################################################')
+    intersections[p] = intersections.get(p, avl_b.LeafN())
+    print('##################################################################')
     print('p = {pt}'.format(pt=p))
     global tau
     global q
 
     # выбрали высоту
-    Edge.height = p.y  # 10*EPS
+    Edge.height = p.y
     # print('Height = {ht}'.format(ht=Edge.height))
     ###########################################################
     # step 1
-    U = avl.Leaf()
+    U = avl_b.LeafN()
     if q.get(p) is not None:
         # в q[p] не более двух рёбер
         U = U.update(q[p])
 
     ###########################################################
     # step 2
-    c = avl.Leaf()
-    low = avl.Leaf()
+    c = avl_b.LeafN()
+    low = avl_b.LeafN()
     for e in tau:
         # по сложности не получается
         if (e.containPt(p)):
@@ -339,12 +339,12 @@ def HandleEvent(p):
     ###########################################################
     # steps 3, 4
     # unionP = U.update(c, low)
-    #  print('UnuionUCL = ({un}, {cn}, {ln})'.format(un=len(U), cn=len(c), ln=len(low)))
+    print('UnuionUCL = ({un}, {cn}, {ln})'.format(un=len(U), cn=len(c), ln=len(low)))
     if (len(U) + len(c) + len(low) > 1):
         intersections[p] = intersections[p].update(U, c, low)
     ###########################################################
     # step 5
-    tau = tau.difference(low, c)
+    tau = avl_b.LeafN().update(tau.difference(low, c))
     ###########################################################
     # step 6
     Edge.height = p.y - 10*EPS  ## теперь сравнение делается по другой высоте
@@ -394,7 +394,7 @@ def findNewEvent(s1, s2, p):
         if i > p:
             #  print('    new intersection {pt}'.format(pt=i))
             if intersections.get(i) is None:
-                intersections[i] = avl.Leaf()
+                intersections[i] = avl_b.LeafN()
             intersections[i] = intersections[i].insert(s1, s2)
             s = s.insert(i)
     return
@@ -415,6 +415,8 @@ Pt.__lt__ = Pt.cmpByDistance  # сравниваем по расстоянию
 for x in intersections:
     if x != Pt(0, 0, BLACK) and x != Pt(0, 0):
         r = Ray(x)
+        if (r not in pts):
+            pts[r] = avl_b.LeafN()
         pts[r] = pts[r].insert(x)
 
 print('--------------------------------------------------')
