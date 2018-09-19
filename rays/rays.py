@@ -10,7 +10,7 @@ import avl_b
 from fractions import Fraction
 import time
 
-EPS = 1e-08
+EPS = Fraction( 1e-08)
 
 
 def vol(a, b, c):
@@ -85,7 +85,7 @@ class Edge:
     id = 0
     height = 0  # уровень заметающей прямой. Нужно для сравнения
 
-    def __init__(self, leftPt, rightPt, isRay=False, color=GRAY):
+    def __init__(self, leftPt, rightPt, isRay=False):
         self.isRay = isRay
         if (leftPt < rightPt):
             self._left = leftPt
@@ -93,8 +93,6 @@ class Edge:
         else:
             self._left = rightPt
             self._right = leftPt
-        #self._left.color = color
-        #self._right.color = color
         self.id = Edge.id
         Edge.id += 1
         # self.height = 0
@@ -119,7 +117,7 @@ class Edge:
         s = (bx - ox)*(ax - ox) + (ay - oy)*(by - oy)
         b1 = d == 0 and s >= 0
         c = s / ((ax - ox)**2 + (ay - oy)**2)
-        return b1 and c**2 <= 1
+        return b1 and c <= 1
         # xs = ((p.x - self.lefteft.x)**2 + (p.y - self.lefteft.y)**2)**0.5
         # ys = ((p.x - self.rightight.x)**2 + (p.y - self.rightight.y)**2)**0.5
         # s = ((self.lefteft.x - self.rightight.x)**2 +
@@ -161,7 +159,8 @@ class Edge:
         prod1 = vol(edge.left, edge.right, self.left)
         prod2 = vol(edge.left, edge.right, self.right)
         prod3 = vol(edge.left, self.left, self.right)
-        color = GRAY  # пересечение общего вида
+        prod4 = vol(edge.right, self.left, self.right)
+        color = BLACK  # пересечение с вершиной
         try:
             resX = self.left.x + (self.right.x - self.left.x) * \
                 abs(prod1)/abs(prod2-prod1)
@@ -170,9 +169,11 @@ class Edge:
         except(ZeroDivisionError):
             resX = self.right.x
             resY = self.right.y
-            color = BLACK
-        if abs(prod1) < 10*EPS or abs(prod2) < 10*EPS or abs(prod3) < 10*EPS:
-            color = BLACK  # точка пересечения совпала с вершиной
+        if not(abs(prod1) < 10*EPS or
+               abs(prod2) < 10*EPS or
+               abs(prod3) < 10*EPS or
+               abs(prod4) < 10*EPS):
+            color = GRAY  # точка общего вида
         res = Pt(resX, resY, color)
         print('returned intersection = {pt}, col={c}'.format(pt=res, c=color))
         return res
@@ -325,7 +326,7 @@ def HandleEvent(p):
     global q
 
     # выбрали высоту
-    Edge.height = p.y
+    Edge.height = p.y + 10*EPS
     print('Height = {ht}'.format(ht=Edge.height))
     ###########################################################
     # step 1
@@ -430,7 +431,6 @@ def findNewEvent(s1, s2, p):
             intersections[i] = intersections[i].update([s1, s2])
             s = s.insert(i)
     return
-
 
 
 start = time.time()
