@@ -51,8 +51,8 @@ class Pt:
             return self.x < p.x
         return False
 
+    '''
     def __gt__(self, p):
-        ''' greater than or equal in \"lexicographical\" order '''
         if (self.y < p.y):
             return True
         if (self.y == p.y):
@@ -60,18 +60,17 @@ class Pt:
         return False
 
     def __ge__(self, p):
-        ''' greater than or equal in \"lexicographical\" order '''
         if (self.y < p.y):
             return True
         if (self.y == p.y):
             return self.x >= p.x
-        return False
+        return False'''
 
     def __hash__(self):
         return (self.x, self.y, self.color).__hash__()
 
     def cmpLexicographicaly(self, other):
-        ''' less than or equal in \"lexicographical\" order '''
+        ''' less than in \"lexicographical\" order '''
         if (self.y > other.y):
             return True
         if (self.y == other.y):
@@ -178,7 +177,7 @@ class Edge:
         print('returned intersection = {pt}, col={c}'.format(pt=res, c=color))
         return res
 
-    def __le__(self, edge):
+    def __lt__(self, edge):
         if (self.isIntersectLine() and edge.isIntersectLine()):
             # если оба отрезка пересекают заметающую прямую
             Ax = self.left.x
@@ -197,17 +196,17 @@ class Edge:
                 Fx = Edge._intersection(Cx, Cy, Dx, Dy)
             if (Ex is None):
                 if (Fx is None):
-                    return Ax <= Cx
-                return Ax <= Fx
+                    return Ax < Cx
+                return Ax < Fx
             else:
                 if Fx is None:
-                    return Ex <= Cx
-            return Ex <= Fx  # Cx
+                    return Ex < Cx
+            return Ex < Fx  # Cx
         return Pt.cmpLexicographicaly(self.left, edge.left)
         # raise Exception('Один из отрезков не пересекает заметающую прямую')
 
-    def __lt__(self, edge):
-        return self <= edge and self != edge
+    def __le__(self, edge):
+        return self < edge or self == edge
 
     def __eq__(self, edge):
         return self.left == edge.left and self.right == edge.right

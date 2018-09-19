@@ -284,13 +284,13 @@ class NodeE:  # класс, описывающий узел дерева
             else:
                 self._left = self._left.remove(key)
         else:
-            if self.cmp(self.key, key):
-                if isinstance(self._right, LeafE):
-                    if self._right.key == key:
-                        self = self._left
-                else:
-                    self._right = self._right.remove(key)
+            #if self.cmp(self.key, key):
+            if isinstance(self._right, LeafE):
+                if self._right.key == key:
+                    self = self._left
             else:
+                self._right = self._right.remove(key)
+            '''else:
                 print('key = {key}, s.key = {skey}'.format(
                         key=key,
                         skey=self.key))
@@ -298,6 +298,7 @@ class NodeE:  # класс, описывающий узел дерева
                 global e2
                 e1 = self.key
                 e2 = key
+                print(self)
                 raise Exception('Сработала странная ветка')
                 # key == self.key
                 q = self._left
@@ -307,7 +308,7 @@ class NodeE:  # класс, описывающий узел дерева
                 minimum = r.findmin()
                 minimum._right = r.removemin()
                 minimum._left = q
-                return minimum.balance()
+                return minimum.balance()'''
         return self.balance()
 
     def __iter__(self):
