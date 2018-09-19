@@ -68,7 +68,7 @@ class Pt:
         return False
 
     def __hash__(self):
-        return (self.x, self.y).__hash__()
+        return (self.x, self.y, self.color).__hash__()
 
     def cmpLexicographicaly(self, other):
         ''' less than or equal in \"lexicographical\" order '''
@@ -94,8 +94,8 @@ class Edge:
         else:
             self._left = rightPt
             self._right = leftPt
-        self._left.color = color
-        self._right.color = color
+        #self._left.color = color
+        #self._right.color = color
         self.id = Edge.id
         Edge.id += 1
         # self.height = 0
@@ -431,6 +431,7 @@ def findNewEvent(s1, s2, p):
             intersections[i] = intersections[i].insert(s1, s2)
             s = s.insert(i)
     return
+
 
 
 start = time.time()
