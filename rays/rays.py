@@ -5,7 +5,7 @@ Created on Sat May 26 19:22:20 2018
 @author: ernst
 """
 
-import avl
+#import avl
 import avl_b
 from fractions import Fraction
 import time
@@ -309,9 +309,9 @@ edges.sort(key=lambda x: x.left)  # n ln n
 
 for e in edges:
     if (q.get(e.left) is None):
-        q[e.left] = avl.Leaf()
+        q[e.left] = avl_b.LeafN()
     if (q.get(e.right) is None):
-        q[e.right] = avl.Leaf()
+        q[e.right] = avl_b.LeafN()
     q[e.left] = q[e.left].insert(e)
     s = s.insert(e.left)
     s = s.insert(e.right)
@@ -428,7 +428,7 @@ def findNewEvent(s1, s2, p):
             print('    new intersection {pt}'.format(pt=i))
             if intersections.get(i) is None:
                 intersections[i] = avl_b.LeafN()
-            intersections[i] = intersections[i].insert(s1, s2)
+            intersections[i] = intersections[i].update([s1, s2])
             s = s.insert(i)
     return
 

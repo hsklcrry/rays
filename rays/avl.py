@@ -9,14 +9,6 @@ def stdcmp(a, b):
     return a < b
 
 
-class Tree:
-    def __init__(self, kvs=None, cmp=stdcmp):
-        self.node = Leaf(cmp=stdcmp)
-        return Leaf(cmp=stdcmp)
-
-    def __setitem__(self, key, value):
-        return
-
  # класс, описывающий узел дерева
 class Node:
     def __init__(self, key, value=None, cmp=stdcmp):
