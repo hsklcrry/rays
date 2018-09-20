@@ -5,6 +5,7 @@ Created on Tue May 29 17:05:58 2018
 @author: ernst
 """
 
+from classes import Edge, Pt, BLACK, Ray, EPS
 
 def stdcmp(a, b):
     return a < b
@@ -27,7 +28,8 @@ class NodeE:  # класс, описывающий узел дерева
         return self._key
 
     def __len__(self):
-        return 1 + len(self._left) + len(self._right)
+        # считаем только листья
+        return len(self._left) + len(self._right)
 
     def __eq__(self, other):
         return self.key == other.key and self._val == other._val and \
@@ -121,7 +123,7 @@ class NodeE:  # класс, описывающий узел дерева
         return self
 
     def __repr__(self):
-        return "({left} {key}[{val}] {right})".format(
+        return "({left} [{val}] {right})".format(
                 left=self._left,
                 key=self.key,
                 right=self._right,
@@ -284,31 +286,27 @@ class NodeE:  # класс, описывающий узел дерева
             else:
                 self._left = self._left.remove(key)
         else:
-            #if self.cmp(self.key, key):
-            if isinstance(self._right, LeafE):
-                if self._right.key == key:
-                    self = self._left
+            if self.cmp(self.key, key):
+                if isinstance(self._right, LeafE):
+                    if self._right.key == key:
+                        self = self._left
+                else:
+                    self._right = self._right.remove(key)
             else:
-                self._right = self._right.remove(key)
-            '''else:
+                # отрезки пересеклись на высоте
+                if key.isIntersectLine():
+                    raise Exception('СП. sk={sk} k={k}'.format(sk=self.key, k=key))
+                else:
+                    raise Exception('СН. sk={sk} k={k} self={self}'.format(self=self, sk=self.key, k=key))
+                h = Edge.height
+                Edge.height = key.right.y
+                self = self.remove(key)
+                Edge.height = h
                 print('key = {key}, s.key = {skey}'.format(
                         key=key,
                         skey=self.key))
-                global e1
-                global e2
-                e1 = self.key
-                e2 = key
                 print(self)
-                raise Exception('Сработала странная ветка')
-                # key == self.key
-                q = self._left
-                r = self._right
-                if (isinstance(r, LeafE)):
-                    return q
-                minimum = r.findmin()
-                minimum._right = r.removemin()
-                minimum._left = q
-                return minimum.balance()'''
+                
         return self.balance()
 
     def __iter__(self):
