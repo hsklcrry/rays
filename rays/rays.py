@@ -9,7 +9,6 @@ TODO:
 """
 
 
-#import avl
 from classes import Edge, Pt, BLACK, Ray, EPS
 import avl
 import avl_b
@@ -19,7 +18,7 @@ import time
 intersections = dict()  # avl.Leaf()
 q = dict()
 pts = dict()    # ключ - луч из 0. Значения - точки на этом луче,
-                # упорядоченные по расстоянию от 0
+            # упорядоченные по расстоянию от 0
 s = avl.Leaf()  # события
 
 tau = avl_b.LeafN()
@@ -62,9 +61,9 @@ edges.sort(key=lambda x: x.left)  # n ln n
 # print(edges)
 
 for e in edges:
-    if (q.get(e.left) is None):
+    if q.get(e.left) is None:
         q[e.left] = avl.Leaf()
-    if (q.get(e.right) is None):
+    if q.get(e.right) is None:
         q[e.right] = avl.Leaf()
     q[e.left] = q[e.left].insert(e)
     s = s.insert(e.left)
@@ -95,13 +94,13 @@ def HandleEvent(p):
     low = avl_b.LeafN()
     for e in tau:
         # по сложности не получается
-        if (e.containPt(p)):
+        if e.containPt(p):
             print('{e} contains the point'.format(e=e))
-            if (e.right == p):
+            if e.right == p:
                 print('new one in low is {e}'.format(e=e))
                 low = low.insert(e)
             else:
-                if (not (e.left == p)):
+                if not (e.left == p):
                     print('new one in mid is {e}'.format(e=e))
                     c = c.insert(e)
 
@@ -117,7 +116,7 @@ def HandleEvent(p):
         ln=len(low)))
     #  print(c)
     print('#####')
-    if (len(U) + len(c) + len(low) > 1):
+    if len(U) + len(c) + len(low) > 1:
         intersections[p] = intersections[p].update(U, c, low)
     ###########################################################
     # step 5
