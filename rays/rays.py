@@ -24,11 +24,11 @@ s = avl.Leaf()  # события
 tau = avl_b.LeafN()
 
 # ВХОДНЫЕ ДАННЫЕ
-input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
-               Edge.fromCoordinates(0.0, 4.0, 1.0, 3.0, color=BLACK),
-               Edge.fromCoordinates(4.0, 1.0, 1.0, 4.0, color=BLACK),
-               Edge.fromCoordinates(6.0, 5.0, 5.0, 6.0, color=BLACK),
-               Edge.fromCoordinates(2.0, 0.0, 1.0, 2.0, color=BLACK)
+input_edges = [Edge.fromCoordinates(3.0, -1.0, 4.0, -0.0, color=BLACK),
+               Edge.fromCoordinates(0.0, -4.0, 1.0, -3.0, color=BLACK),
+               Edge.fromCoordinates(4.0, -1.0, 1.0, -4.0, color=BLACK),
+               Edge.fromCoordinates(6.0, -5.0, 5.0, -6.0, color=BLACK),
+               Edge.fromCoordinates(2.0, -0.0, 1.0, -2.0, color=BLACK)
                ]
 
 for i in range(10, 10):
@@ -73,15 +73,15 @@ for e in edges:
 def HandleEvent(p):
     # p.color = BLACK
     intersections[p] = avl.Leaf()
-    print('##################################################################')
-    print('p = {pt}'.format(pt=p))
+    #print('##################################################################')
+    #print('p = {pt}'.format(pt=p))
     global tau
     global q
 
     # выбрали высоту
     ###########################################################
     # step 1
-    Edge.height = p.y + 10 * EPS
+    Edge.height = p.y - 10 * EPS
     U = avl_b.LeafN()
     if q.get(p) is not None:
         U = U.update(q[p])
@@ -89,40 +89,47 @@ def HandleEvent(p):
     ###########################################################
     # step 2
     Edge.height = p.y + 10 * EPS
-    print('Height = {ht}'.format(ht=float(Edge.height)))
+    #print('Height = {ht}'.format(ht=float(Edge.height)))
     c = avl_b.LeafN()
     low = avl_b.LeafN()
     for e in tau:
         # по сложности не получается
         if e.containPt(p):
-            print('{e} contains the point'.format(e=e))
+            #print('{e} contains the point'.format(e=e))
             if e.right == p:
-                print('new one in low is {e}'.format(e=e))
+                #print('new one in low is {e}'.format(e=e))
+                Edge.height = p.y - 10 * EPS
                 low = low.insert(e)
+                Edge.height = p.y + 10 * EPS
             else:
                 if not (e.left == p):
-                    print('new one in mid is {e}'.format(e=e))
+                    #print('new one in mid is {e}'.format(e=e))
+                    Edge.height = p.y - 10 * EPS
                     c = c.insert(e)
+                    Edge.height = p.y + 10 * EPS
 
-    print('c = {c}'.format(c=c))
-    print('low = {c}'.format(c=low))
-    print('tau = {c}'.format(c=tau))
+    #print('c = {c}'.format(c=c))
+    #print('low = {c}'.format(c=low))
+    #print('tau = {c}'.format(c=tau))
     ###########################################################
     # steps 3, 4
     # unionP = U.update(c, low)
-    print('UnuionUCL = ({un}, {cn}, {ln})'.format(
-        un=len(U),
-        cn=len(c),
-        ln=len(low)))
+    #print('UnuionUCL = ({un}, {cn}, {ln})'.format(
+    #    un=len(U),
+    #    cn=len(c),
+    #    ln=len(low)))
     #  print(c)
-    print('#####')
+    #print('#####')
     if len(U) + len(c) + len(low) > 1:
         intersections[p] = intersections[p].update(U, c, low)
     ###########################################################
     # step 5
     Edge.height = p.y + 10 * EPS
-    
+    #if not tau.areKeysCorrect():
+    #    raise Exception('Oof')
     tau = tau.difference(c, low)
+    #if not tau.areKeysCorrect():
+    #    raise Exception('Oof')
     ###########################################################
     # step 6
     Edge.height = p.y - 10 * EPS  # теперь сравнение делается по другой высоте
@@ -130,20 +137,24 @@ def HandleEvent(p):
         try:
             tau = tau.insert(e)
         except(Exception):
-            print('exc')
+            #print('exc')
+            pass
     for e in c:
         try:
             tau = tau.insert(e)
         except(Exception):
-            print('exc')
+            #print('exc')
+            pass
     ###########################################################
     # step 8...
-    uc = c.copy()
+    # uc = c.copy() - ошибка. Порядок рёбер в C инвертирован
+    uc = avl_b.LeafN().update(c)
     for e in U:
         try:
             uc = uc.insert(e)
         except Exception as e:
-            print('exc at uc = {e}'.format(e=e))
+            #print('exc at uc = {e}'.format(e=e))
+            pass
     # uc = c.update(U)
     # if e.isRay:
     #    rays[e] = rays[e].update(tau)
@@ -153,27 +164,30 @@ def HandleEvent(p):
         try:
             s1 = tau.getPrev(low.findmin().key)
             s2 = tau.getNext(low.findmax().key)
-            print('FNE1({s1}, {s2})'.format(s1=s1, s2=s2))
+            #print('FNE1({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
         except AttributeError as a:
-            print('1 -- ' + str(a), )
+            #print('1 -- ' + str(a), )
             pass
     else:
         try:
             s1 = uc.findmin().key
             s2 = tau.getPrev(s1)
-            print('FNE2({s1}, {s2})'.format(s1=s1, s2=s2))
+            #print('FNE2({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
         except AttributeError as a:
-            print('2 --' + str(a))
+            #print('2 --' + str(a))
             pass
         try:
             s1 = uc.findmax().key
-            s2 = tau.copy().getNext(s1)
-            print('FNE3({s1}, {s2})'.format(s1=s1, s2=s2))
+            tau1 = tau
+            s2 = tau.getNext(s1)
+            if tau1 != tau:
+                raise Exception('OofFNE3')
+            #print('FNE3({s1}, {s2})'.format(s1=s1, s2=s2))
             findNewEvent(s1, s2, p)
         except AttributeError as a:
-            print('3 --' + str(a))
+            #print('3 --' + str(a))
             pass
     ###########################################################
     return

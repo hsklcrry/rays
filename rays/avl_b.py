@@ -60,6 +60,10 @@ class NodeE:  # класс, описывающий узел дерева
     def is_empty(self):
         return len(self) == 0
 
+    def areKeysCorrect(self):
+        b = self.key == self._left.findmax().key
+        return b and self._left.areKeysCorrect() and self._right.areKeysCorrect()
+
     def height(self):
         self._height = self.fixheight()
         return self._height
@@ -278,6 +282,7 @@ class NodeE:  # класс, описывающий узел дерева
                 self = self._right
             else:
                 self._left = self._left.remove(key)
+                self._key = self._left.findmax().key
             return self.balance()
 
         if self.cmp(key, self.key):
@@ -379,6 +384,9 @@ class LeafN(NodeE):  # класс, описывающий пустое дере�
 
     def is_member(self, value=None):
         return False
+
+    def areKeysCorrect(self):
+        return True
 
     def __len__(self):
         return 0
@@ -492,6 +500,9 @@ class LeafE(NodeE):  # класс, описывающий лист дерева
         if (self.key == key):
             return LeafN()
         return self
+
+    def areKeysCorrect(self):
+        return True
 
     '''
     @property
