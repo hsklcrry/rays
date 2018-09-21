@@ -61,6 +61,7 @@ class NodeE:  # класс, описывающий узел дерева
         return len(self) == 0
 
     def height(self):
+        self._key = self._left.findmax()._key
         self._height = self.fixheight()
         return self._height
 
@@ -68,6 +69,8 @@ class NodeE:  # класс, описывающий узел дерева
         return self._right.height() - self._left.height()
 
     def fixheight(self):
+        if self._key != self._left.findmax()._key:
+            raise(Exception)
         hl = self._left.height()
         hr = self._right.height()
         return 1 + max(hl, hr)
@@ -278,6 +281,7 @@ class NodeE:  # класс, описывающий узел дерева
                 self = self._right
             else:
                 self._left = self._left.remove(key)
+                self._key = self._left.findmax().key
             return self.balance()
 
         if self.cmp(key, self.key):
