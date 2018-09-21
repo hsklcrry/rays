@@ -24,14 +24,14 @@ s = avl.Leaf()  # события
 tau = avl_b.LeafN()
 
 # ВХОДНЫЕ ДАННЫЕ
-input_edges = [Edge.fromCoordinates(3.0, -1.0, 4.0, -0.0, color=BLACK),
-               Edge.fromCoordinates(0.0, -4.0, 1.0, -3.0, color=BLACK),
-               Edge.fromCoordinates(4.0, -1.0, 1.0, -4.0, color=BLACK),
-               Edge.fromCoordinates(6.0, -5.0, 5.0, -6.0, color=BLACK),
-               Edge.fromCoordinates(2.0, -0.0, 1.0, -2.0, color=BLACK)
+input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
+               Edge.fromCoordinates(0.0, 4.0, 1.0, 3.0, color=BLACK),
+               Edge.fromCoordinates(4.0, 1.0, 1.0, 4.0, color=BLACK),
+               Edge.fromCoordinates(6.0, 5.0, 5.0, 6.0, color=BLACK),
+               Edge.fromCoordinates(2.0, 0.0, 1.0, 2.0, color=BLACK)
                ]
 
-for i in range(10, 10):
+for i in range(10, 35):
     input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0,
                                             i + 1.0, 1.0, color=BLACK))
     # input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0,
@@ -104,7 +104,7 @@ def HandleEvent(p):
             else:
                 if not (e.left == p):
                     #print('new one in mid is {e}'.format(e=e))
-                    Edge.height = p.y - 10 * EPS
+                    Edge.height = p.y - 10 * EPS  # TODO
                     c = c.insert(e)
                     Edge.height = p.y + 10 * EPS
 
@@ -199,9 +199,9 @@ def findNewEvent(s1, s2, p):
     if s1.isRay and s2.isRay:
         return
     if s1.isIntersect(s2):
-        print('    {s1} intersects {s2}'.format(s1=s1, s2=s2))
         i = s1.getIntersection(s2)
         if i > p:
+            print('    {s1} intersects {s2}'.format(s1=s1, s2=s2))
             print('    new intersection {pt}'.format(pt=i))
             if intersections.get(i) is None:
                 intersections[i] = avl.Leaf()
@@ -217,7 +217,7 @@ while len(s) > 0:
     start1 = time.time()
     HandleEvent(v)
     end1 = time.time()
-    # print('ELAPSED TIME: {t}'.format(t=end1 - start1))
+    print('ELAPSED TIME: {t}'.format(t=end1 - start1))
 
 end = time.time()
 
@@ -264,7 +264,7 @@ for ray in pts:
 
 print('Visible edges are: {vis}'.format(vis=visible))
 print('ELAPSED TIME: {t}. e = {l}, i = {i}'.format(
-        t=end - start, 
+        t=end - start,
         l=len(input_edges), 
         i=len(intersections)))
 results.append((end - start, len(input_edges), len(intersections)))

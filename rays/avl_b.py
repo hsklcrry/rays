@@ -73,8 +73,8 @@ class NodeE:  # класс, описывающий узел дерева
         return self._right.height() - self._left.height()
 
     def fixheight(self):
-        if self._key != self._left.findmax()._key:
-            raise(Exception)
+        # if self._key != self._left.findmax()._key:
+        #    raise(Exception)
         hl = self._left.height()
         hr = self._right.height()
         return 1 + max(hl, hr)
@@ -137,11 +137,13 @@ class NodeE:  # класс, описывающий узел дерева
                 val=self._val if self._val is not None else '')
 
     def findmin(self):
+        # Сложность: O(heigth)
         if (isinstance(self._left, LeafE)):
             return self
         return self._left.findmin()
 
     def findmax(self):
+        # Сложность: O(heigth)
         if (isinstance(self._right, LeafE)):
             return self._right
         return self._right.findmax()
@@ -155,13 +157,15 @@ class NodeE:  # класс, описывающий узел дерева
             if isinstance(self._right, LeafE):
                 return self.key
             if self.cmp(self._right.key, key):
-                return self._right.getPrev(key)
-            return max(self.key, self._right.getPrev(key))
+                return self._right._getPrev(key)
+            return max(self.key, self._right._getPrev(key))
+        if self.key == key:
+            return self._left._getPrev(key)
         if self.cmp(key, self.key) or self.key == key:
             if self._left.is_empty():
                 return None
                 # return self.key
-            return self._left.getPrev(key)
+            return self._left._getPrev(key)
 
     '''def getPr(self, cond):
         if cond(self.key):
@@ -260,6 +264,7 @@ class NodeE:  # класс, описывающий узел дерева
         return res.balance()
 
     def _getGT(self, key):
+        # Сложность ln n
         if key == self.key:
             return self._right
         if self.cmp(key, self.key):
@@ -280,12 +285,12 @@ class NodeE:  # класс, описывающий узел дерева
             print('key = {key}, s.key = {skey}'.format(
                     key=key,
                     skey=self.key))'''
-            self._key = self._left.findmax().key
+            # self._key = self._left.findmax().key
             if isinstance(self._left, LeafE):
                 self = self._right
             else:
                 self._left = self._left.remove(key)
-                self._key = self._left.findmax().key
+                self._key = self._left.findmax().key  # TODO: убрать
             return self.balance()
 
         if self.cmp(key, self.key):
@@ -302,6 +307,7 @@ class NodeE:  # класс, описывающий узел дерева
                     self._right = self._right.remove(key)
             else:
                 # отрезки пересеклись на высоте
+                # этого не должно происходить при должном выборе высоты
                 if key.isIntersectLine():
                     raise Exception('СП. sk={sk} k={k}'.format(sk=self.key, k=key))
                 else:
