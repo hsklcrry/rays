@@ -5,12 +5,12 @@ Created on Tue May 29 17:05:58 2018
 @author: ernst
 """
 
+
 def stdcmp(a, b):
     return a < b
 
 
- # класс, описывающий узел дерева
-class Node:
+class Node:  # класс, описывающий узел дерева
     def __init__(self, key, value=None, cmp=stdcmp):
         ''' cmp(a,b) - аналог a < b для ключей'''
         self._key = key
@@ -258,7 +258,7 @@ class Node:
         return self.balance()
 
     def remove(self, key):
-        if self.cmp(key, self._key):            
+        if self.cmp(key, self._key):
             self._left = self._left.remove(key)
         else:
             if self.cmp(self.key, key):
@@ -287,8 +287,7 @@ class Node:
         return m
 
 
- # класс, описывающий лист дерева
-class Leaf(Node):
+class Leaf(Node):  # класс, описывающий лист дерева
     def __init__(self, cmp=stdcmp):
         self.cmp = cmp
         return

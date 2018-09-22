@@ -309,6 +309,8 @@ class NodeE:  # класс, описывающий узел дерева
                 # отрезки пересеклись на высоте
                 # этого не должно происходить при должном выборе высоты
                 if key.isIntersectLine():
+                    print(self.key.isC())
+                    print(key.isC())
                     raise Exception('СП. sk={sk} k={k}'.format(sk=self.key, k=key))
                 else:
                     raise Exception('СН. sk={sk} k={k} self={self}'.format(self=self, sk=self.key, k=key))

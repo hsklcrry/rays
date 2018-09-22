@@ -81,6 +81,9 @@ class Pt:
 class Edge:
     id = 0
     height = 0  # уровень заметающей прямой. Нужно для сравнения
+    event = None  # текущее событие
+    isInserting = False  # Устанавливается в True перед вставкой рёбер и
+    # в False перед удалением. Нужно для корректного сравнения рёбер из C
 
     def __init__(self, leftPt, rightPt, isRay=False):
         self.isRay = isRay
@@ -173,9 +176,18 @@ class Edge:
         print('returned intersection = {pt}, col={c}'.format(pt=res, c=color))
         return res
 
+    def isU(self):
+        return self.left == Edge.event
+
+    def isC(self):
+        return self.left < Edge.event and Edge.event < self.right
+
+    def isL(self):
+        return self.right == Edge.event
+
     def __lt__(self, edge):
-        if (1==1 or self.isIntersectLine() and edge.isIntersectLine()):
-            # если оба отрезка пересекают заметающую прямую
+        if (self.isIntersectLine() and edge.isIntersectLine()):
+            # если оба ребра пересекают заметающую прямую
             Ax = self.left.x
             Bx = self.right.x
             Cx = edge.left.x
@@ -197,8 +209,59 @@ class Edge:
             else:
                 if Fx is None:
                     return Ex < Cx
+            if Ex == Fx:
+                if self.isU() and edge.isL():
+                    return False
+                if self.isL() and edge.isU():
+                    return True
+                if self.isU() and edge.isC() or self.isC() and edge.isU():
+                    oldH = Edge.height
+                    Edge.height = max(self.right.y, edge.right.y)
+                    Ex = Edge._intersection(Ax, Ay, Bx, By)
+                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
+                    Edge.height = oldH
+                    return Ex < Fx
+                if self.isL() and edge.isC() or self.isC() and edge.isL():
+                    oldH = Edge.height
+                    Edge.height = min(self.left.y, edge.left.y)
+                    Ex = Edge._intersection(Ax, Ay, Bx, By)
+                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
+                    Edge.height = oldH
+                    return Ex < Fx
+                if self.isU() and edge.isU():
+                    oldH = Edge.height
+                    Edge.height = max(self.right.y, edge.right.y)
+                    Ex = Edge._intersection(Ax, Ay, Bx, By)
+                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
+                    Edge.height = oldH
+                    return Ex < Fx
+                if self.isL() and edge.isL():
+                    oldH = Edge.height
+                    Edge.height = min(self.left.y, edge.left.y)
+                    Ex = Edge._intersection(Ax, Ay, Bx, By)
+                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
+                    Edge.height = oldH
+                    return Ex < Fx
+                if self.isC() and edge.isC():
+                    oldH = Edge.height
+                    if Edge.isInserting:
+                        Edge.height = max(self.right.y, edge.right.y)
+                    else:
+                        Edge.height = min(self.left.y, edge.left.y)
+                    Ex = Edge._intersection(Ax, Ay, Bx, By)
+                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
+                    Edge.height = oldH
+                    return Ex < Fx
+                print(self)
+                print(self.isU())
+                print(self.isC())
+                print(edge)
+                print(edge.isU())
+                print(edge.isC())
+                raise Exception
             return Ex < Fx  # Cx
         # return Pt.cmpLexicographicaly(self.left, edge.left)
+        print('e1 = {e1}, e2 = {e2}'.format(e1=self, e2=edge))
         raise Exception('Один из отрезков не пересекает заметающую прямую')
 
     def __le__(self, edge):
@@ -253,4 +316,3 @@ class Ray:
 
     def __repr__(self):
         return 'Ray' + self.target.__repr__()
-
