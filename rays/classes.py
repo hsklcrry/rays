@@ -173,7 +173,7 @@ class Edge:
                abs(prod4) < 10*EPS):
             color = GRAY  # точка общего вида
         res = Pt(resX, resY, color)
-        print('returned intersection = {pt}, col={c}'.format(pt=res, c=color))
+#        print('returned intersection = {pt}, col={c}'.format(pt=res, c=color))
         return res
 
     def isU(self):
@@ -205,10 +205,10 @@ class Edge:
             if (Ex is None):
                 if (Fx is None):
                     return Ax < Cx
-                return Ax < Fx
+                return False  # Ax < Fx
             else:
                 if Fx is None:
-                    return Ex < Cx
+                    return True  # Ex < Cx
             if Ex == Fx:
                 if self.isU() and edge.isL():
                     return False
