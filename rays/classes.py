@@ -75,7 +75,8 @@ class Pt:
         return False
 
     def cmpByDistance(self, other):
-        return self.x**2 + self.y**2 < other.x**2 + other.y**2
+        return self.x * self.x + self.y * self.y < \
+            other.x * other.x + other.y * other.y
 
 
 class Edge:
@@ -95,7 +96,6 @@ class Edge:
             self._right = leftPt
         self.id = Edge.id
         Edge.id += 1
-        # self.height = 0
         return
 
     @property
@@ -118,12 +118,6 @@ class Edge:
         b1 = d == 0 and s >= 0
         c = s / ((ax - ox)**2 + (ay - oy)**2)
         return b1 and c <= 1
-        # xs = ((p.x - self.lefteft.x)**2 + (p.y - self.lefteft.y)**2)**0.5
-        # ys = ((p.x - self.rightight.x)**2 + (p.y - self.rightight.y)**2)**0.5
-        # s = ((self.lefteft.x - self.rightight.x)**2 +
-        # (self.lefteft.y - self.rightight.y)**2)**0.5
-        # abs(s**2 - xs**2 - ys**2 - 6*xs*ys - 2*(xs + ys)*(s - xs - ys)) < EPS
-        # return abs(s - xs - ys) < EPS
 
     def _intersection(Ax, Ay, Bx, By):  # x координата пересечения с заметающей
         return ((By - Edge.height)*Ax + (Edge.height - Ay)*Bx) / (By - Ay)
@@ -214,44 +208,24 @@ class Edge:
                     return False
                 if self.isL() and edge.isU():
                     return True
+                oldH = Edge.height
                 if self.isU() and edge.isC() or self.isC() and edge.isU():
-                    oldH = Edge.height
                     Edge.height = max(self.right.y, edge.right.y)
-                    Ex = Edge._intersection(Ax, Ay, Bx, By)
-                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
-                    Edge.height = oldH
-                    return Ex < Fx
                 if self.isL() and edge.isC() or self.isC() and edge.isL():
-                    oldH = Edge.height
                     Edge.height = min(self.left.y, edge.left.y)
-                    Ex = Edge._intersection(Ax, Ay, Bx, By)
-                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
-                    Edge.height = oldH
-                    return Ex < Fx
                 if self.isU() and edge.isU():
-                    oldH = Edge.height
                     Edge.height = max(self.right.y, edge.right.y)
-                    Ex = Edge._intersection(Ax, Ay, Bx, By)
-                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
-                    Edge.height = oldH
-                    return Ex < Fx
                 if self.isL() and edge.isL():
-                    oldH = Edge.height
                     Edge.height = min(self.left.y, edge.left.y)
-                    Ex = Edge._intersection(Ax, Ay, Bx, By)
-                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
-                    Edge.height = oldH
-                    return Ex < Fx
                 if self.isC() and edge.isC():
-                    oldH = Edge.height
                     if Edge.isInserting:
                         Edge.height = max(self.right.y, edge.right.y)
                     else:
                         Edge.height = min(self.left.y, edge.left.y)
-                    Ex = Edge._intersection(Ax, Ay, Bx, By)
-                    Fx = Edge._intersection(Cx, Cy, Dx, Dy)
-                    Edge.height = oldH
-                    return Ex < Fx
+                Ex = Edge._intersection(Ax, Ay, Bx, By)
+                Fx = Edge._intersection(Cx, Cy, Dx, Dy)
+                Edge.height = oldH
+                return Ex < Fx
                 print(self)
                 print(self.isU())
                 print(self.isC())

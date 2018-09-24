@@ -65,7 +65,7 @@ class NodeE:  # класс, описывающий узел дерева
         return b and self._left.areKeysCorrect() and self._right.areKeysCorrect()
 
     def height(self):
-        self._key = self._left.findmax()._key
+        # self._key = self._left.findmax()._key
         self._height = self.fixheight()
         return self._height
 
@@ -73,8 +73,8 @@ class NodeE:  # класс, описывающий узел дерева
         return self._right.height() - self._left.height()
 
     def fixheight(self):
-        # if self._key != self._left.findmax()._key:
-        #    raise(Exception)
+        #if self._key != self._left.findmax()._key:
+        #   raise(Exception)
         hl = self._left.height()
         hr = self._right.height()
         return 1 + max(hl, hr)
@@ -130,7 +130,7 @@ class NodeE:  # класс, описывающий узел дерева
         return self
 
     def __repr__(self):
-        return "({left} [{val}] {right})".format(
+        return "({left} [{key}{val}] {right})".format(
                 left=self._left,
                 key=self.key,
                 right=self._right,
@@ -217,7 +217,7 @@ class NodeE:  # класс, описывающий узел дерева
         ''' returns a copy of the \'subtree\' whose keys
         are less than given key '''
         if key == self.key:
-            return self._left.copy()._getLT(key)
+            return self._left.copy()  # ._getLT(key)
         if self.cmp(self.key, key):
             res = self.copy()
             newR = res._right._getLT(key)
@@ -290,7 +290,7 @@ class NodeE:  # класс, описывающий узел дерева
                 self = self._right
             else:
                 self._left = self._left.remove(key)
-                self._key = self._left.findmax().key  # TODO: убрать
+                self._key = self._left.findmax().key  # TODO: убрать(не выйдет)
             return self.balance()
 
         if self.cmp(key, self.key):
@@ -338,12 +338,14 @@ class NodeE:  # класс, описывающий узел дерева
 
 
 class LeafN(NodeE):  # класс, описывающий пустое дерево
+    Id = 0
     def __init__(self, cmp=stdcmp):
+        LeafN.Id = LeafN.Id + 1
         self.cmp = cmp
         return
 
     def copy(self):
-        return LeafN()
+        return self  # LeafN()
 
     def __repr__(self):
         return 'Empty tree'
