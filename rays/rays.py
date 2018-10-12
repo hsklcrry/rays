@@ -29,7 +29,7 @@ input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
                Edge.fromCoordinates(2.0, 0.0, 1.0, 2.0, color=BLACK)
                ]
 
-for i in range(10, 23):
+for i in range(10, 10):
     input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0,
                                             i + 1.0, 1.0, color=BLACK))
     # input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0,

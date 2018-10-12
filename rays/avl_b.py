@@ -65,7 +65,7 @@ class NodeE:  # класс, описывающий узел дерева
         return b and self._left.areKeysCorrect() and self._right.areKeysCorrect()
 
     def height(self):
-        self._key = self._left.findmax()._key
+        # self._key = self._left.findmax()._key
         self._height = self.fixheight()
         return self._height
 
