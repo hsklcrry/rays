@@ -32,8 +32,8 @@ input_edges = [Edge.fromCoordinates(3.0, 1.0, 4.0, 0.0, color=BLACK),
 for i in range(10, 10):
     input_edges.append(Edge.fromCoordinates(i + 1.0, 0.0,
                                             i + 1.0, 1.0, color=BLACK))
-    # input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0,
-    #                                        i + 1.0, 20.0, color=BLACK))
+    input_edges.append(Edge.fromCoordinates(i + 0.5, 20.0,
+                                            i + 1.0, 20.0, color=BLACK))
 
 
 edges = input_edges.copy()
